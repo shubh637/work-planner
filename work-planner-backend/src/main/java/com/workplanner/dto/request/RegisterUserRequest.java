@@ -10,6 +10,6 @@ public class RegisterUserRequest {
     private String name;
     @NotBlank @Email
     private String email;
-    @NotBlank
-    private String password;
+    private String password; // optional — not required when manager invites a user
+    private String role;     // MANAGER or TEAM_MEMBER — defaults to TEAM_MEMBER if null
 }

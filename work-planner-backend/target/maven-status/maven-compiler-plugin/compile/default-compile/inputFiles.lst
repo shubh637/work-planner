@@ -29,6 +29,7 @@
 /Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/service/EmailService.java
 /Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/controller/TaskController.java
 /Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/service/AuthService.java
+/Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/dto/request/SetPasswordRequest.java
 /Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/dto/request/CreateProjectRequest.java
 /Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/exception/InvalidStatusTransitionException.java
 /Users/I578395/projects/work-planner/work-planner-backend/src/main/java/com/workplanner/dto/request/ApproveRejectRequest.java

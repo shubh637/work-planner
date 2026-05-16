@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { authApi } from '../api/api'
 import { useAuth } from '../context/AuthContext'
 
@@ -49,6 +49,9 @@ export default function Login() {
             type="submit" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
+          <p style={{ textAlign: 'right', marginTop: '0.5rem', fontSize: '0.875rem' }}>
+            <Link to="/forgot-password" style={{ color: '#2563eb' }}>Forgot password?</Link>
+          </p>
         </form>
         <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8' }}>
           Default manager: manager@workplanner.com / admin123

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { MdDashboard, MdFolderOpen, MdTask, MdGroup, MdBarChart, MdLightbulb, MdAddCircle } from 'react-icons/md'
+import { MdDashboard, MdFolderOpen, MdTask, MdGroup, MdBarChart, MdLightbulb } from 'react-icons/md'
 
 const MANAGER_NAV = [
   { to: '/manager',          icon: <MdDashboard />,  label: 'Dashboard'   },
@@ -12,10 +12,9 @@ const MANAGER_NAV = [
 ]
 
 const MEMBER_NAV = [
-  { to: '/member',             icon: <MdDashboard />,   label: 'Dashboard'      },
-  { to: '/member/tasks',       icon: <MdTask />,        label: 'My Tasks'       },
-  { to: '/member/suggestions', icon: <MdLightbulb />,   label: 'My Suggestions' },
-  { to: '/member/suggest',     icon: <MdAddCircle />,   label: 'Suggest Task'   },
+  { to: '/member',             icon: <MdDashboard />, label: 'Dashboard'      },
+  { to: '/member/tasks',       icon: <MdTask />,      label: 'My Tasks'       },
+  { to: '/member/suggestions', icon: <MdLightbulb />, label: 'My Suggestions' },
 ]
 function getInitials(name = '') {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)

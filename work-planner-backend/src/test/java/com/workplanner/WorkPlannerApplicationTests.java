@@ -9,7 +9,9 @@ import org.springframework.test.context.TestPropertySource;
     "spring.datasource.url=jdbc:h2:mem:testdb",
     "spring.datasource.driver-class-name=org.h2.Driver",
     "spring.jpa.hibernate.ddl-auto=create-drop",
-    "spring.mail.host=localhost"
+    "spring.mail.host=localhost",
+    "MAIL_USERNAME=test@example.com",
+    "MAIL_PASSWORD=test-password"
 })
 class WorkPlannerApplicationTests {
     @Test

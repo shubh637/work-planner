@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start:backend": "cd ../work-planner-backend && mvn spring-boot:run",
+    "start:all": "npm run start:backend & npm run dev",
+    "kill": "lsof -ti:8080,5173 | xargs kill -9 || true",
+    "restart": "npm run kill && npm run start:all"
   },
   "dependencies": {
     "react": "^18.3.1",

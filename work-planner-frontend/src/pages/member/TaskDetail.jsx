@@ -4,17 +4,15 @@ import Layout from '../../components/Layout'
 import ProgressBadge from '../../components/ProgressBadge'
 import { taskApi } from '../../api/api'
 
-const NEXT_STATUS = { OPEN: 'IN_PROGRESS', IN_PROGRESS: 'CLOSED' }
-const STATUS_LABEL = { IN_PROGRESS: 'Start Work', CLOSED: 'Mark Complete' }
-
 export default function TaskDetailMember() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [task, setTask]       = useState(null)
-  const [history, setHistory] = useState([])
-  const [notes, setNotes]     = useState('')
-  const [msg, setMsg]         = useState('')
-  const [msgType, setMsgType] = useState('success')
+  const [task, setTask]         = useState(null)
+  const [history, setHistory]   = useState([])
+  const [notes, setNotes]       = useState('')
+  const [msg, setMsg]           = useState('')
+  const [msgType, setMsgType]   = useState('success')
+  const [loading, setLoading]   = useState('')
 
   const load = () => {
     taskApi.getById(id).then(r => setTask(r.data))
@@ -23,23 +21,37 @@ export default function TaskDetailMember() {
 
   useEffect(() => { load() }, [id])
 
-  const advance = async () => {
+  const flash = (text, type = 'success') => { setMsg(text); setMsgType(type) }
+
+  const handlePostUpdate = async () => {
+    if (!notes.trim()) { flash('Please write an update before posting.', 'error'); return }
+    setLoading('update')
     try {
-      await taskApi.advanceProgress(id, { notes })
+      await taskApi.postUpdate(id, { notes })
       setNotes('')
-      setMsgType('success')
-      setMsg(`Status updated to ${NEXT_STATUS[task.status].replace('_', ' ')}`)
+      flash('Update posted.')
       load()
     } catch (err) {
-      setMsgType('error')
-      setMsg(err.response?.data?.message || 'Error updating status')
-    }
+      flash(err.response?.data?.message || 'Failed to post update.', 'error')
+    } finally { setLoading('') }
+  }
+
+  const handleMarkComplete = async () => {
+    setLoading('complete')
+    try {
+      await taskApi.markComplete(id, { notes })
+      setNotes('')
+      flash('Task marked as complete!')
+      load()
+    } catch (err) {
+      flash(err.response?.data?.message || 'Failed to complete task.', 'error')
+    } finally { setLoading('') }
   }
 
   if (!task) return <Layout><div className="page">Loading…</div></Layout>
 
-  const nextStatus = NEXT_STATUS[task.status]
-  const canAdvance = !!nextStatus
+  const isActive = ['OPEN', 'IN_PROGRESS', 'APPROVED'].includes(task.status)
+  const isDone   = task.status === 'CLOSED'
 
   return (
     <Layout>
@@ -51,6 +63,7 @@ export default function TaskDetailMember() {
           <div className={`alert alert-${msgType}`} style={{ marginBottom: '1rem' }}>{msg}</div>
         )}
 
+        {/* Task info */}
         <div className="card" style={{ marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -70,66 +83,53 @@ export default function TaskDetailMember() {
           )}
         </div>
 
-        {/* Status update */}
+        {/* Post update + complete */}
         <div className="card" style={{ marginBottom: '1.25rem' }}>
-          <h3 className="section-title">Update Status</h3>
+          <h3 className="section-title">Post Update</h3>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="text-muted" style={{ fontSize: '0.82rem' }}>Current:</span>
-              <ProgressBadge status={task.status} />
-            </div>
-            {canAdvance && (
-              <>
-                <span style={{ color: '#94a3b8', fontSize: '1.1rem' }}>→</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="text-muted" style={{ fontSize: '0.82rem' }}>Next:</span>
-                  <ProgressBadge status={nextStatus} />
-                </div>
-              </>
-            )}
-          </div>
-
-          {canAdvance ? (
+          {isDone ? (
+            <p className="text-muted">This task is completed.</p>
+          ) : isActive ? (
             <>
               <div className="form-group">
-                <label className="form-label">Notes (optional)</label>
-                <textarea className="form-control" value={notes}
-                  onChange={e => setNotes(e.target.value)} placeholder="What did you do?" />
+                <textarea className="form-control" rows={3} value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Describe what you've done or any blockers…" />
               </div>
-              <button className="btn btn-primary" onClick={advance}>
-                {STATUS_LABEL[nextStatus]}
-              </button>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button className="btn btn-secondary" onClick={handlePostUpdate}
+                  disabled={loading === 'update'}>
+                  {loading === 'update' ? 'Posting…' : 'Post Update'}
+                </button>
+                <button className="btn btn-primary" onClick={handleMarkComplete}
+                  disabled={loading === 'complete'}>
+                  {loading === 'complete' ? 'Completing…' : '✓ Mark as Complete'}
+                </button>
+              </div>
             </>
           ) : (
-            <p className="text-muted">
-              {task.status === 'CLOSED'
-                ? 'This task is completed.'
-                : 'Status cannot be changed from here.'}
-            </p>
+            <p className="text-muted">Status cannot be changed from here.</p>
           )}
         </div>
 
+        {/* History */}
         <div className="card">
-          <h3 className="section-title">History</h3>
-          {history.length === 0 ? <p className="text-muted">No history yet.</p> : (
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>Changed By</th><th>From</th><th>To</th><th>Notes</th><th>When</th></tr>
-                </thead>
-                <tbody>
-                  {history.map(h => (
-                    <tr key={h.id}>
-                      <td>{h.changedByName}</td>
-                      <td><ProgressBadge status={h.oldStatus} /></td>
-                      <td><ProgressBadge status={h.newStatus} /></td>
-                      <td>{h.notes || '-'}</td>
-                      <td>{new Date(h.changedAt).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <h3 className="section-title">Activity</h3>
+          {history.length === 0 ? <p className="text-muted">No activity yet.</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[...history].reverse().map(h => (
+                <div key={h.id} style={{ borderLeft: '3px solid #e2e8f0', paddingLeft: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#94a3b8' }}>
+                    <span><strong style={{ color: '#334155' }}>{h.changedByName}</strong>
+                      {h.oldStatus !== h.newStatus
+                        ? <> · <ProgressBadge status={h.oldStatus} /> → <ProgressBadge status={h.newStatus} /></>
+                        : <> · posted an update</>}
+                    </span>
+                    <span>{new Date(h.changedAt).toLocaleString()}</span>
+                  </div>
+                  {h.notes && <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem' }}>{h.notes}</p>}
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -106,6 +106,7 @@ public class TaskService {
 
         Task saved = taskRepository.save(task);
         recordProgress(saved, memberId, null, TaskStatus.PENDING, "Task suggested by member");
+        emailService.sendTaskSuggestionEmail(saved, project.getManager());
         return toResponse(saved);
     }
 
@@ -182,6 +183,34 @@ public class TaskService {
         Task saved = taskRepository.save(task);
         recordProgress(saved, managerId, TaskStatus.PENDING, TaskStatus.REJECTED,
                 req.getNotes() != null ? req.getNotes() : "Rejected by manager");
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public TaskResponse postUpdate(Long taskId, ProgressUpdateRequest req, Long memberId) {
+        Task task = findOrThrow(taskId);
+        if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(memberId)) {
+            throw new UnauthorizedActionException("You are not assigned to this task");
+        }
+        recordProgress(task, memberId, task.getStatus(), task.getStatus(),
+                req.getNotes() != null ? req.getNotes() : "Update posted");
+        return toResponse(task);
+    }
+
+    @Transactional
+    public TaskResponse markComplete(Long taskId, ProgressUpdateRequest req, Long memberId) {
+        Task task = findOrThrow(taskId);
+        if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(memberId)) {
+            throw new UnauthorizedActionException("You are not assigned to this task");
+        }
+        if (task.getStatus() == TaskStatus.CLOSED) {
+            throw new InvalidStatusTransitionException("Task is already completed");
+        }
+        TaskStatus prev = task.getStatus();
+        task.setStatus(TaskStatus.CLOSED);
+        Task saved = taskRepository.save(task);
+        recordProgress(saved, memberId, prev, TaskStatus.CLOSED,
+                req.getNotes() != null ? req.getNotes() : "Marked as complete");
         return toResponse(saved);
     }
 

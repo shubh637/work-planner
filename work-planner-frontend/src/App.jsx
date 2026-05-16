@@ -6,6 +6,8 @@ import RoleRoute from './routes/RoleRoute'
 
 import Login from './pages/Login'
 import Unauthorized from './pages/Unauthorized'
+import SetPassword from './pages/SetPassword'
+import ForgotPassword from './pages/ForgotPassword'
 
 // Manager pages
 import ManagerDashboard from './pages/manager/ManagerDashboard'
@@ -30,6 +32,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Manager routes */}
           <Route element={<ProtectedRoute />}>

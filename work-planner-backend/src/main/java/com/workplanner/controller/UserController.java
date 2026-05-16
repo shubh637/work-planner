@@ -51,7 +51,11 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+    public ResponseEntity<Void> deactivate(@PathVariable Long id, Authentication auth) {
+        UserResponse me = userService.getByEmail(auth.getName());
+        if (me.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         userService.deactivate(id);
         return ResponseEntity.noContent().build();
     }

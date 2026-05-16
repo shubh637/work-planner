@@ -6,11 +6,14 @@ import com.workplanner.entity.User;
 import com.workplanner.exception.ResourceNotFoundException;
 import com.workplanner.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     public List<UserResponse> getAllMembers() {
         return userRepository.findByRoleAndActiveTrue(User.Role.TEAM_MEMBER)
@@ -44,14 +51,25 @@ public class UserService {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("Email already in use: " + req.getEmail());
         }
+        User.Role role = (req.getRole() != null && req.getRole().equalsIgnoreCase("MANAGER"))
+                ? User.Role.MANAGER : User.Role.TEAM_MEMBER;
+
+        String token = UUID.randomUUID().toString();
         User user = User.builder()
                 .name(req.getName())
                 .email(req.getEmail())
-                .password(passwordEncoder.encode(req.getPassword()))
-                .role(User.Role.TEAM_MEMBER)
+                .password(passwordEncoder.encode(UUID.randomUUID().toString())) // random placeholder
+                .role(role)
                 .active(true)
+                .passwordResetToken(token)
+                .tokenExpiry(LocalDateTime.now().plusHours(24))
                 .build();
-        return toResponse(userRepository.save(user));
+        user = userRepository.save(user);
+
+        String setPasswordUrl = frontendUrl + "/set-password?token=" + token;
+        emailService.sendInviteEmail(user, setPasswordUrl);
+
+        return toResponse(user);
     }
 
     @Transactional
@@ -62,7 +80,35 @@ public class UserService {
         if (req.getPassword() != null && !req.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(req.getPassword()));
         }
+        if (req.getRole() != null && !req.getRole().isBlank()) {
+            user.setRole(req.getRole().equalsIgnoreCase("MANAGER") ? User.Role.MANAGER : User.Role.TEAM_MEMBER);
+        }
         return toResponse(userRepository.save(user));
+    }
+
+    @Transactional
+    public void forgotPassword(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            String token = UUID.randomUUID().toString();
+            user.setPasswordResetToken(token);
+            user.setTokenExpiry(LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+            String resetUrl = frontendUrl + "/set-password?token=" + token;
+            emailService.sendPasswordResetEmail(user, resetUrl);
+        });
+    }
+
+    @Transactional
+    public void setPassword(String token, String newPassword) {
+        User user = userRepository.findByPasswordResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired link."));
+        if (user.getTokenExpiry() == null || user.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("This link has expired. Please contact your manager.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setTokenExpiry(null);
+        userRepository.save(user);
     }
 
     @Transactional

@@ -13,13 +13,15 @@ USE work_planner;
 -- users
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
-    id         BIGINT       NOT NULL AUTO_INCREMENT,
-    name       VARCHAR(100) NOT NULL,
-    email      VARCHAR(150) NOT NULL UNIQUE,
-    password   VARCHAR(255) NOT NULL,
-    role       ENUM('MANAGER','TEAM_MEMBER') NOT NULL DEFAULT 'TEAM_MEMBER',
-    is_active  TINYINT(1)   NOT NULL DEFAULT 1,
-    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                   BIGINT       NOT NULL AUTO_INCREMENT,
+    name                 VARCHAR(100) NOT NULL,
+    email                VARCHAR(150) NOT NULL UNIQUE,
+    password             VARCHAR(255) NOT NULL,
+    role                 ENUM('MANAGER','TEAM_MEMBER') NOT NULL DEFAULT 'TEAM_MEMBER',
+    is_active            TINYINT(1)   NOT NULL DEFAULT 1,
+    password_reset_token VARCHAR(255) DEFAULT NULL,
+    token_expiry         DATETIME     DEFAULT NULL,
+    created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     INDEX idx_users_email (email),
     INDEX idx_users_role  (role)
@@ -90,7 +92,7 @@ CREATE TABLE IF NOT EXISTS task_progress (
 -- Seed: default manager (password = admin123, BCrypt 12 rounds)
 -- ---------------------------------------------------------
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('Admin Manager',
+('Shubham Sain',
  'manager@workplanner.com',
  '$2a$10$oD14vULAP6Q7Lkx4bTyYGebXXU7S7xW3fcKm/y1.T5gxJxAsL5SW6',
  'MANAGER');

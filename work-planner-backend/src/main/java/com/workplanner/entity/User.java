@@ -32,6 +32,12 @@ public class User {
     @Builder.Default
     private boolean active = true;
 
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    @Column(name = "token_expiry")
+    private LocalDateTime tokenExpiry;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

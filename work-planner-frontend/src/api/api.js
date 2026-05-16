@@ -37,6 +37,8 @@ export const taskApi = {
   approve:          (id, d)  => axiosInstance.patch(`/tasks/${id}/approve`, d),
   reject:           (id, d)  => axiosInstance.patch(`/tasks/${id}/reject`, d),
   advanceProgress:  (id, d)  => axiosInstance.patch(`/tasks/${id}/progress`, d),
+  postUpdate:       (id, d)  => axiosInstance.post(`/tasks/${id}/update`, d),
+  markComplete:     (id, d)  => axiosInstance.patch(`/tasks/${id}/complete`, d),
 }
 
 export const reportApi = {

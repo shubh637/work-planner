@@ -133,4 +133,22 @@ public class TaskController {
         return ResponseEntity.ok(taskService.advanceProgress(id,
                 req != null ? req : new ProgressUpdateRequest(), currentUserId(auth)));
     }
+
+    @PostMapping("/{id}/update")
+    @PreAuthorize("hasRole('TEAM_MEMBER')")
+    public ResponseEntity<TaskResponse> postUpdate(@PathVariable Long id,
+                                                   @RequestBody(required = false) ProgressUpdateRequest req,
+                                                   Authentication auth) {
+        return ResponseEntity.ok(taskService.postUpdate(id,
+                req != null ? req : new ProgressUpdateRequest(), currentUserId(auth)));
+    }
+
+    @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasRole('TEAM_MEMBER')")
+    public ResponseEntity<TaskResponse> complete(@PathVariable Long id,
+                                                 @RequestBody(required = false) ProgressUpdateRequest req,
+                                                 Authentication auth) {
+        return ResponseEntity.ok(taskService.markComplete(id,
+                req != null ? req : new ProgressUpdateRequest(), currentUserId(auth)));
+    }
 }
