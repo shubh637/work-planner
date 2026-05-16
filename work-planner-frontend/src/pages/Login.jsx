@@ -7,6 +7,7 @@ export default function Login() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
+  const [showPwd, setShowPwd]   = useState(false)
   const [loading, setLoading]   = useState(false)
   const { login } = useAuth()
   const navigate  = useNavigate()
@@ -42,8 +43,16 @@ export default function Login() {
           </div>
           <div className="form-group">
             <label className="form-label">Password</label>
-            <input className="form-control" type="password" value={password}
-              onChange={e => setPassword(e.target.value)} required />
+            <div style={{ position: 'relative' }}>
+              <input className="form-control" type={showPwd ? 'text' : 'password'} value={password}
+                onChange={e => setPassword(e.target.value)} required
+                style={{ paddingRight: '2.5rem' }} />
+              <button type="button" onClick={() => setShowPwd(v => !v)}
+                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: '0.85rem' }}>
+                {showPwd ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
           <button className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}
             type="submit" disabled={loading}>
@@ -53,9 +62,6 @@ export default function Login() {
             <Link to="/forgot-password" style={{ color: '#2563eb' }}>Forgot password?</Link>
           </p>
         </form>
-        <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8' }}>
-          Default manager: manager@workplanner.com / admin123
-        </p>
       </div>
     </div>
   )

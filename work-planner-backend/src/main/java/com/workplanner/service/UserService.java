@@ -48,22 +48,32 @@ public class UserService {
 
     @Transactional
     public UserResponse addMember(RegisterUserRequest req) {
-        if (userRepository.existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("Email already in use: " + req.getEmail());
-        }
         User.Role role = (req.getRole() != null && req.getRole().equalsIgnoreCase("MANAGER"))
                 ? User.Role.MANAGER : User.Role.TEAM_MEMBER;
 
         String token = UUID.randomUUID().toString();
-        User user = User.builder()
+
+        User user = userRepository.findByEmail(req.getEmail()).map(existing -> {
+            if (existing.isActive()) {
+                throw new IllegalArgumentException("Email already in use: " + req.getEmail());
+            }
+            existing.setName(req.getName());
+            existing.setRole(role);
+            existing.setActive(true);
+            existing.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            existing.setPasswordResetToken(token);
+            existing.setTokenExpiry(LocalDateTime.now().plusHours(24));
+            return existing;
+        }).orElseGet(() -> User.builder()
                 .name(req.getName())
                 .email(req.getEmail())
-                .password(passwordEncoder.encode(UUID.randomUUID().toString())) // random placeholder
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .role(role)
                 .active(true)
                 .passwordResetToken(token)
                 .tokenExpiry(LocalDateTime.now().plusHours(24))
-                .build();
+                .build());
+
         user = userRepository.save(user);
 
         String setPasswordUrl = frontendUrl + "/set-password?token=" + token;

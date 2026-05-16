@@ -40,7 +40,7 @@ npm run dev
 ## Default Login
 | Role    | Email                       | Password  |
 |---------|-----------------------------|-----------|
-| Manager | manager@workplanner.com     | admin123  |
+| Admin | Admin@workplanner.com     | admin123  |
 
 Register team members via **Team** page after logging in as manager.
 

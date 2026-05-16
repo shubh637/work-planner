@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../../service-now-mcp"
+		},
+		{
+			"path": "../../a2a-agent-template"
+		},
+		{
+			"path": "../../bits-ls1-2025sl93031"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}

@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS task_progress (
 -- Seed: default manager (password = admin123, BCrypt 12 rounds)
 -- ---------------------------------------------------------
 INSERT IGNORE INTO users (name, email, password, role) VALUES
-('Shubham Sain',
- 'manager@workplanner.com',
+('Admin',
+ 'Admin@workplanner.com',
  '$2a$10$oD14vULAP6Q7Lkx4bTyYGebXXU7S7xW3fcKm/y1.T5gxJxAsL5SW6',
  'MANAGER');
