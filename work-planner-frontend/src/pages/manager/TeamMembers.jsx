@@ -59,14 +59,15 @@ export default function TeamMembers() {
   }
 
   const handleDelete = async () => {
-    setLoading(true)
+    const id = deleteTarget
+    setMembers(prev => prev.filter(m => m.id !== id))
+    setDeleteTarget(null)
+    showToast('Member deleted')
     try {
-      await userApi.remove(deleteTarget)
-      showToast('Member deleted')
-      setDeleteTarget(null)
+      await userApi.remove(id)
+    } catch {
       load()
-    } finally {
-      setLoading(false)
+      showToast('Failed to delete member')
     }
   }
 

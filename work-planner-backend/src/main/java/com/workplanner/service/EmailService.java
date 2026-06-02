@@ -1,6 +1,6 @@
 package com.workplanner.service;
 
-import com.mailersend.sdk.Email;
+import com.mailersend.sdk.emails.Email;
 import com.mailersend.sdk.MailerSend;
 import com.mailersend.sdk.MailerSendResponse;
 import com.mailersend.sdk.exceptions.MailerSendException;
