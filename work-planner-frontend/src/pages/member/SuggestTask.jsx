@@ -43,26 +43,26 @@ export default function SuggestTask() {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Task Title *</label>
-              <input className="form-control" value={form.title} required
+              <label className="form-label" htmlFor="st-title">Task Title *</label>
+              <input id="st-title" className="form-control" value={form.title} required
                 onChange={e => setForm({ ...form, title: e.target.value })} />
             </div>
             <div className="form-group">
-              <label className="form-label">Description</label>
-              <textarea className="form-control" value={form.description}
+              <label className="form-label" htmlFor="st-desc">Description</label>
+              <textarea id="st-desc" className="form-control" value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })} />
             </div>
             <div className="form-group">
-              <label className="form-label">Project *</label>
-              <select className="form-control" value={form.projectId} required
+              <label className="form-label" htmlFor="st-project">Project *</label>
+              <select id="st-project" className="form-control" value={form.projectId} required
                 onChange={e => setForm({ ...form, projectId: e.target.value })}>
                 <option value="">Select project</option>
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Suggested Due Date</label>
-              <input type="date" className="form-control" value={form.dueDate}
+              <label className="form-label" htmlFor="st-due">Suggested Due Date</label>
+              <input id="st-due" type="date" className="form-control" value={form.dueDate}
                 onChange={e => setForm({ ...form, dueDate: e.target.value })} />
             </div>
             <div className="form-actions">

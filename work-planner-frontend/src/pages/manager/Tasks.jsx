@@ -124,23 +124,23 @@ export default function Tasks() {
               {editError && <div className="alert alert-error">{editError}</div>}
               <form onSubmit={handleEdit}>
                 <div className="form-group">
-                  <label className="form-label">Title</label>
-                  <input className="form-control" value={editForm.title} required
+                  <label className="form-label" htmlFor="task-edit-title">Title</label>
+                  <input id="task-edit-title" className="form-control" value={editForm.title} required
                     onChange={e => setEditForm({ ...editForm, title: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Description</label>
-                  <textarea className="form-control" value={editForm.description}
+                  <label className="form-label" htmlFor="task-edit-desc">Description</label>
+                  <textarea id="task-edit-desc" className="form-control" value={editForm.description}
                     onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Due Date</label>
-                  <input type="date" className="form-control" value={editForm.dueDate}
+                  <label className="form-label" htmlFor="task-edit-due">Due Date</label>
+                  <input id="task-edit-due" type="date" className="form-control" value={editForm.dueDate}
                     onChange={e => setEditForm({ ...editForm, dueDate: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Status</label>
-                  <select className="form-control" value={editForm.status}
+                  <label className="form-label" htmlFor="task-edit-status">Status</label>
+                  <select id="task-edit-status" className="form-control" value={editForm.status}
                     onChange={e => setEditForm({ ...editForm, status: e.target.value })}>
                     {ALL_STATUSES.map(s => (
                       <option key={s} value={s}>{s.replace('_', ' ')}</option>
@@ -149,8 +149,8 @@ export default function Tasks() {
                 </div>
                 {editForm.status !== editTarget.status && (
                   <div className="form-group">
-                    <label className="form-label">Reason for status change (optional)</label>
-                    <input className="form-control" value={editForm.statusNotes}
+                    <label className="form-label" htmlFor="task-edit-reason">Reason for status change (optional)</label>
+                    <input id="task-edit-reason" className="form-control" value={editForm.statusNotes}
                       onChange={e => setEditForm({ ...editForm, statusNotes: e.target.value })}
                       placeholder="e.g. Reopened for revision…" />
                   </div>
@@ -172,34 +172,34 @@ export default function Tasks() {
               {error && <div className="alert alert-error">{error}</div>}
               <form onSubmit={handleCreate}>
                 <div className="form-group">
-                  <label className="form-label">Title</label>
-                  <input className="form-control" value={form.title} required
+                  <label className="form-label" htmlFor="task-create-title">Title</label>
+                  <input id="task-create-title" className="form-control" value={form.title} required
                     onChange={e => setForm({ ...form, title: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Description</label>
-                  <textarea className="form-control" value={form.description}
+                  <label className="form-label" htmlFor="task-create-desc">Description</label>
+                  <textarea id="task-create-desc" className="form-control" value={form.description}
                     onChange={e => setForm({ ...form, description: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Project *</label>
-                  <select className="form-control" value={form.projectId} required
+                  <label className="form-label" htmlFor="task-create-project">Project *</label>
+                  <select id="task-create-project" className="form-control" value={form.projectId} required
                     onChange={e => setForm({ ...form, projectId: e.target.value })}>
                     <option value="">Select project</option>
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Assign To</label>
-                  <select className="form-control" value={form.assignedToUserId}
+                  <label className="form-label" htmlFor="task-create-assign">Assign To</label>
+                  <select id="task-create-assign" className="form-control" value={form.assignedToUserId}
                     onChange={e => setForm({ ...form, assignedToUserId: e.target.value })}>
                     <option value="">Unassigned</option>
                     {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Due Date</label>
-                  <input type="date" className="form-control" value={form.dueDate}
+                  <label className="form-label" htmlFor="task-create-due">Due Date</label>
+                  <input id="task-create-due" type="date" className="form-control" value={form.dueDate}
                     onChange={e => setForm({ ...form, dueDate: e.target.value })} />
                 </div>
                 <div className="form-actions">

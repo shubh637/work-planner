@@ -102,18 +102,18 @@ export default function SuggestionDetail() {
           ) : (
             <form onSubmit={handleSave} style={{ marginTop: '1rem' }}>
               <div className="form-group">
-                <label className="form-label">Title *</label>
-                <input className="form-control" value={form.title} required
+                <label className="form-label" htmlFor="sd-title">Title *</label>
+                <input id="sd-title" className="form-control" value={form.title} required
                   onChange={e => setForm({ ...form, title: e.target.value })} />
               </div>
               <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea className="form-control" value={form.description}
+                <label className="form-label" htmlFor="sd-desc">Description</label>
+                <textarea id="sd-desc" className="form-control" value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })} />
               </div>
               <div className="form-group">
-                <label className="form-label">Suggested Due Date</label>
-                <input type="date" className="form-control" value={form.dueDate}
+                <label className="form-label" htmlFor="sd-due">Suggested Due Date</label>
+                <input id="sd-due" type="date" className="form-control" value={form.dueDate}
                   onChange={e => setForm({ ...form, dueDate: e.target.value })} />
               </div>
               <div className="form-actions">

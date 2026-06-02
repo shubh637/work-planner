@@ -98,26 +98,26 @@ export default function TeamMembers() {
               {error && <div className="alert alert-error">{error}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label className="form-label">Name</label>
-                  <input className="form-control" value={form.name} required
+                  <label className="form-label" htmlFor="tm-name">Name</label>
+                  <input id="tm-name" className="form-control" value={form.name} required
                     onChange={e => setForm({ ...form, name: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Email</label>
-                  <input className="form-control" type="email" value={form.email} required
+                  <label className="form-label" htmlFor="tm-email">Email</label>
+                  <input id="tm-email" className="form-control" type="email" value={form.email} required
                     onChange={e => setForm({ ...form, email: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">
+                  <label className="form-label" htmlFor="tm-password">
                     Password {editTarget && <span style={{ color: '#94a3b8', fontWeight: 400 }}>(leave blank to keep current)</span>}
                   </label>
-                  <input className="form-control" type="password" value={form.password}
+                  <input id="tm-password" className="form-control" type="password" value={form.password}
                     required={!editTarget}
                     onChange={e => setForm({ ...form, password: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Role</label>
-                  <select className="form-control" value={form.role}
+                  <label className="form-label" htmlFor="tm-role">Role</label>
+                  <select id="tm-role" className="form-control" value={form.role}
                     onChange={e => setForm({ ...form, role: e.target.value })}>
                     <option value="TEAM_MEMBER">Team Member</option>
                     <option value="MANAGER">Manager</option>

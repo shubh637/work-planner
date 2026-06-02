@@ -100,8 +100,8 @@ export default function TaskDetailManager() {
           <h3 className="section-title">Edit Status</h3>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 160 }}>
-              <label className="form-label">Status</label>
-              <select className="form-control" value={editStatus}
+              <label className="form-label" htmlFor="td-status">Status</label>
+              <select id="td-status" className="form-control" value={editStatus}
                 onChange={e => setEditStatus(e.target.value)}>
                 {ALL_STATUSES.map(s => (
                   <option key={s} value={s}>{s.replace('_', ' ')}</option>
@@ -109,8 +109,8 @@ export default function TaskDetailManager() {
               </select>
             </div>
             <div style={{ flex: 2, minWidth: 200 }}>
-              <label className="form-label">Notes (optional)</label>
-              <input className="form-control" value={statusNotes}
+              <label className="form-label" htmlFor="td-status-notes">Notes (optional)</label>
+              <input id="td-status-notes" className="form-control" value={statusNotes}
                 onChange={e => setStatusNotes(e.target.value)} placeholder="Reason for change…" />
             </div>
             <button className="btn btn-primary"
@@ -126,8 +126,8 @@ export default function TaskDetailManager() {
           <h3 className="section-title">Assign Task</h3>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
             <div style={{ flex: 1 }}>
-              <label className="form-label">Team Member</label>
-              <select className="form-control" value={assignTo}
+              <label className="form-label" htmlFor="td-assign">Team Member</label>
+              <select id="td-assign" className="form-control" value={assignTo}
                 onChange={e => setAssignTo(e.target.value)}>
                 <option value="">Select member</option>
                 {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
@@ -143,8 +143,8 @@ export default function TaskDetailManager() {
             </button>
           </div>
           <div style={{ marginTop: '0.75rem' }}>
-            <label className="form-label">Notes (for approve/reject)</label>
-            <input className="form-control" value={notes}
+            <label className="form-label" htmlFor="td-action-notes">Notes (for approve/reject)</label>
+            <input id="td-action-notes" className="form-control" value={notes}
               onChange={e => setNotes(e.target.value)} placeholder="Optional notes…" />
           </div>
         </div>

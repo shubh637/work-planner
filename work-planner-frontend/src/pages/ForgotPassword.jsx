@@ -47,8 +47,8 @@ export default function ForgotPassword() {
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input className="form-control" type="email" value={email} required autoFocus
+            <label className="form-label" htmlFor="fp-email">Email</label>
+            <input id="fp-email" className="form-control" type="email" value={email} required autoFocus
               onChange={e => setEmail(e.target.value)} />
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>

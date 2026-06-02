@@ -65,13 +65,13 @@ export default function Projects() {
               {error && <div className="alert alert-error">{error}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label className="form-label">Project Name</label>
-                  <input className="form-control" value={form.name} required
+                  <label className="form-label" htmlFor="proj-name">Project Name</label>
+                  <input id="proj-name" className="form-control" value={form.name} required
                     onChange={e => setForm({ ...form, name: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Description</label>
-                  <textarea className="form-control" value={form.description}
+                  <label className="form-label" htmlFor="proj-desc">Description</label>
+                  <textarea id="proj-desc" className="form-control" value={form.description}
                     onChange={e => setForm({ ...form, description: e.target.value })} />
                 </div>
                 <div className="form-actions">

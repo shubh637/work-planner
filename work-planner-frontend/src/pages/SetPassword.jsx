@@ -70,13 +70,13 @@ export default function SetPassword() {
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">New Password</label>
-            <input className="form-control" type="password" value={password} required autoFocus
+            <label className="form-label" htmlFor="sp-password">New Password</label>
+            <input id="sp-password" className="form-control" type="password" value={password} required autoFocus
               onChange={e => setPassword(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Confirm Password</label>
-            <input className="form-control" type="password" value={confirm} required
+            <label className="form-label" htmlFor="sp-confirm">Confirm Password</label>
+            <input id="sp-confirm" className="form-control" type="password" value={confirm} required
               onChange={e => setConfirm(e.target.value)} />
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>

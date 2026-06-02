@@ -37,14 +37,14 @@ export default function Login() {
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input className="form-control" type="email" value={email}
+            <label className="form-label" htmlFor="login-email">Email</label>
+            <input id="login-email" className="form-control" type="email" value={email}
               onChange={e => setEmail(e.target.value)} required autoFocus />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label" htmlFor="login-password">Password</label>
             <div style={{ position: 'relative' }}>
-              <input className="form-control" type={showPwd ? 'text' : 'password'} value={password}
+              <input id="login-password" className="form-control" type={showPwd ? 'text' : 'password'} value={password}
                 onChange={e => setPassword(e.target.value)} required
                 style={{ paddingRight: '2.5rem' }} />
               <button type="button" onClick={() => setShowPwd(v => !v)}
