@@ -19,6 +19,11 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('wp_user')
       window.location.href = '/login'
     }
+    if (error.response?.status === 403) {
+      const user = JSON.parse(localStorage.getItem('wp_user') || 'null')
+      const role = user?.role
+      window.location.href = role === 'MANAGER' ? '/manager' : role === 'TEAM_MEMBER' ? '/member' : '/login'
+    }
     return Promise.reject(error)
   }
 )

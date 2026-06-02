@@ -5,6 +5,7 @@ import com.workplanner.dto.response.ProjectResponse;
 import com.workplanner.repository.UserRepository;
 import com.workplanner.service.ProjectService;
 import jakarta.validation.Valid;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,9 +45,20 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.update(id, req));
     }
 
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ProjectResponse> updateStatus(@PathVariable Long id,
+                                                        @RequestBody StatusRequest req) {
+        return ResponseEntity.ok(projectService.updateStatus(id, req.getStatus()));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         projectService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Data
+    static class StatusRequest {
+        private String status;
     }
 }

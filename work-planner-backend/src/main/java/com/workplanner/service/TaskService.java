@@ -65,6 +65,9 @@ public class TaskService {
     @Transactional
     public TaskResponse createTask(CreateTaskRequest req, Long managerId) {
         Project project = findProject(req.getProjectId());
+        if (project.getStatus() == Project.ProjectStatus.DONE) {
+            throw new InvalidStatusTransitionException("Cannot add tasks to a completed project");
+        }
         User manager = findUser(managerId);
 
         Task.TaskBuilder builder = Task.builder()
@@ -92,6 +95,9 @@ public class TaskService {
     @Transactional
     public TaskResponse suggestTask(SuggestTaskRequest req, Long memberId) {
         Project project = findProject(req.getProjectId());
+        if (project.getStatus() == Project.ProjectStatus.DONE) {
+            throw new InvalidStatusTransitionException("Cannot suggest tasks for a completed project");
+        }
         User member = findUser(memberId);
 
         Task task = Task.builder()
@@ -106,7 +112,10 @@ public class TaskService {
 
         Task saved = taskRepository.save(task);
         recordProgress(saved, memberId, null, TaskStatus.PENDING, "Task suggested by member");
-        emailService.sendTaskSuggestionEmail(saved, project.getManager());
+        String suggestedByName = member.getName();
+        String projectName = project.getName();
+        userRepository.findByRoleAndActiveTrue(User.Role.MANAGER)
+                .forEach(manager -> emailService.sendTaskSuggestionEmail(saved, manager, suggestedByName, projectName));
         return toResponse(saved);
     }
 
@@ -131,6 +140,21 @@ public class TaskService {
     }
 
     @Transactional
+    public TaskResponse editSuggestion(Long id, UpdateTaskRequest req, Long memberId) {
+        Task task = findOrThrow(id);
+        if (!task.getSuggestedBy().getId().equals(memberId)) {
+            throw new UnauthorizedActionException("You can only edit your own suggestions");
+        }
+        if (task.getStatus() != TaskStatus.PENDING) {
+            throw new InvalidStatusTransitionException("Can only edit suggestions that are still pending");
+        }
+        if (req.getTitle() != null) task.setTitle(req.getTitle());
+        if (req.getDescription() != null) task.setDescription(req.getDescription());
+        if (req.getDueDate() != null) task.setDueDate(req.getDueDate());
+        return toResponse(taskRepository.save(task));
+    }
+
+    @Transactional
     public void deleteTask(Long id) {
         findOrThrow(id);
         taskRepository.deleteById(id);
@@ -139,6 +163,9 @@ public class TaskService {
     @Transactional
     public TaskResponse assignTask(Long taskId, AssignTaskRequest req, Long managerId) {
         Task task = findOrThrow(taskId);
+        if (task.getProject().getStatus() == Project.ProjectStatus.DONE) {
+            throw new InvalidStatusTransitionException("Cannot assign tasks in a completed project");
+        }
         User assignee = findUser(req.getAssignedToUserId());
 
         if (assignee.getRole() != User.Role.TEAM_MEMBER) {

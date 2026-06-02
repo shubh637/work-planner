@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import RoleRoute from './routes/RoleRoute'
 
@@ -19,15 +20,16 @@ import Reports from './pages/manager/Reports'
 
 // Member pages
 import MemberDashboard from './pages/member/MemberDashboard'
-import MyTasks from './pages/member/MyTasks'
 import TaskDetailMember from './pages/member/TaskDetail'
 import SuggestTask from './pages/member/SuggestTask'
 import MySuggestions from './pages/member/MySuggestions'
 import SuggestionDetail from './pages/member/SuggestionDetail'
+import ProfileSettings from './pages/ProfileSettings'
 
 export default function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -44,16 +46,17 @@ export default function App() {
               <Route path="/manager/tasks" element={<Tasks />} />
               <Route path="/manager/tasks/:id" element={<TaskDetailManager />} />
               <Route path="/manager/reports" element={<Reports />} />
+              <Route path="/manager/settings" element={<ProfileSettings />} />
             </Route>
 
             {/* Member routes */}
             <Route element={<RoleRoute role="TEAM_MEMBER" />}>
               <Route path="/member" element={<MemberDashboard />} />
-              <Route path="/member/tasks" element={<MyTasks />} />
-              <Route path="/member/tasks/:id" element={<TaskDetailMember />} />
+<Route path="/member/tasks/:id" element={<TaskDetailMember />} />
               <Route path="/member/suggest" element={<SuggestTask />} />
               <Route path="/member/suggestions" element={<MySuggestions />} />
               <Route path="/member/suggestions/:id" element={<SuggestionDetail />} />
+              <Route path="/member/settings" element={<ProfileSettings />} />
             </Route>
           </Route>
 
@@ -61,6 +64,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   )
 }

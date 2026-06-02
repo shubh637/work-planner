@@ -3,6 +3,7 @@ package com.workplanner.service;
 import com.workplanner.dto.request.CreateProjectRequest;
 import com.workplanner.dto.response.ProjectResponse;
 import com.workplanner.entity.Project;
+import com.workplanner.entity.Project.ProjectStatus;
 import com.workplanner.entity.User;
 import com.workplanner.exception.ResourceNotFoundException;
 import com.workplanner.repository.ProjectRepository;
@@ -39,6 +40,7 @@ public class ProjectService {
                 .name(req.getName())
                 .description(req.getDescription())
                 .manager(manager)
+                .status(parseStatus(req.getStatus(), ProjectStatus.NOT_STARTED))
                 .build();
 
         return toResponse(projectRepository.save(project));
@@ -49,6 +51,14 @@ public class ProjectService {
         Project project = findOrThrow(id);
         project.setName(req.getName());
         if (req.getDescription() != null) project.setDescription(req.getDescription());
+        if (req.getStatus() != null) project.setStatus(parseStatus(req.getStatus(), project.getStatus()));
+        return toResponse(projectRepository.save(project));
+    }
+
+    @Transactional
+    public ProjectResponse updateStatus(Long id, String rawStatus) {
+        Project project = findOrThrow(id);
+        project.setStatus(parseStatus(rawStatus, project.getStatus()));
         return toResponse(projectRepository.save(project));
     }
 
@@ -63,6 +73,12 @@ public class ProjectService {
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + id));
     }
 
+    private ProjectStatus parseStatus(String raw, ProjectStatus fallback) {
+        if (raw == null || raw.isBlank()) return fallback;
+        try { return ProjectStatus.valueOf(raw.toUpperCase()); }
+        catch (IllegalArgumentException e) { return fallback; }
+    }
+
     public ProjectResponse toResponse(Project p) {
         return ProjectResponse.builder()
                 .id(p.getId())
@@ -70,6 +86,7 @@ public class ProjectService {
                 .description(p.getDescription())
                 .managerId(p.getManager().getId())
                 .managerName(p.getManager().getName())
+                .status(p.getStatus() != null ? p.getStatus().name() : ProjectStatus.NOT_STARTED.name())
                 .createdAt(p.getCreatedAt())
                 .build();
     }

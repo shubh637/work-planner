@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import Layout from '../../components/Layout'
 import ProgressBadge from '../../components/ProgressBadge'
 import { taskApi, projectApi } from '../../api/api'
+import { useToast } from '../../context/ToastContext'
 
 export default function SuggestionDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
-  const [task, setTask]       = useState(null)
-  const [history, setHistory] = useState([])
+  const { showToast } = useToast()
+  const [task, setTask]         = useState(null)
+  const [history, setHistory]   = useState([])
   const [projects, setProjects] = useState([])
-  const [editing, setEditing] = useState(false)
-  const [form, setForm]       = useState({})
-  const [msg, setMsg]         = useState('')
-  const [msgType, setMsgType] = useState('success')
+  const [editing, setEditing]   = useState(false)
+  const [form, setForm]         = useState({})
 
   const load = () => {
     taskApi.getById(id).then(r => {
@@ -36,18 +35,16 @@ export default function SuggestionDetail() {
   const handleSave = async (e) => {
     e.preventDefault()
     try {
-      await taskApi.update(id, {
+      await taskApi.editSuggestion(id, {
         title: form.title,
         description: form.description,
         dueDate: form.dueDate || null,
       })
-      setMsg('Suggestion updated successfully.')
-      setMsgType('success')
+      showToast('Suggestion updated successfully.')
       setEditing(false)
       load()
     } catch (err) {
-      setMsg(err.response?.data?.message || 'Failed to update suggestion')
-      setMsgType('error')
+      showToast(err.response?.data?.message || 'Failed to update suggestion', 'error')
     }
   }
 
@@ -58,10 +55,6 @@ export default function SuggestionDetail() {
   return (
     <Layout>
       <div className="page container">
-        <button className="btn btn-secondary btn-sm" style={{ marginBottom: '1rem' }}
-          onClick={() => navigate(-1)}>← Back</button>
-
-        {msg && <div className={`alert alert-${msgType}`} style={{ marginBottom: '1rem' }}>{msg}</div>}
 
         <div className="card" style={{ marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

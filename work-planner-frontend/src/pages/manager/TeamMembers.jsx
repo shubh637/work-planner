@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react'
 import Layout from '../../components/Layout'
 import ConfirmModal from '../../components/ConfirmModal'
 import { userApi } from '../../api/api'
+import { useAuth } from '../../context/AuthContext'
 
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'TEAM_MEMBER' }
 
 export default function TeamMembers() {
+  const { auth, login } = useAuth()
   const [members, setMembers]           = useState([])
   const [showForm, setShowForm]         = useState(false)
   const [editTarget, setEditTarget]     = useState(null) // user object being edited
@@ -35,7 +37,15 @@ export default function TeamMembers() {
     setError('')
     try {
       if (editTarget) {
-        await userApi.update(editTarget.id, form)
+        const res = await userApi.update(editTarget.id, form)
+        const updated = res.data
+        // if the current user's own role changed, update auth state and reload
+        if (updated.id === auth?.user?.userId && updated.role !== auth?.user?.role) {
+          const newUser = { ...auth.user, role: updated.role }
+          login(auth.token, newUser)
+          window.location.href = updated.role === 'MANAGER' ? '/manager/dashboard' : '/member/dashboard'
+          return
+        }
       } else {
         await userApi.addMember(form)
       }
@@ -109,10 +119,14 @@ export default function TeamMembers() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">
-                    Password {editTarget && <span style={{ color: '#94a3b8', fontWeight: 400 }}>(leave blank to keep current)</span>}
+                    Password{' '}
+                    <span style={{ color: '#94a3b8', fontWeight: 400 }}>
+                      {editTarget
+                        ? '(leave blank to keep current)'
+                        : '(leave blank to send invite email)'}
+                    </span>
                   </label>
                   <input className="form-control" type="password" value={form.password}
-                    required={!editTarget}
                     onChange={e => setForm({ ...form, password: e.target.value })} />
                 </div>
                 <div className="form-group">

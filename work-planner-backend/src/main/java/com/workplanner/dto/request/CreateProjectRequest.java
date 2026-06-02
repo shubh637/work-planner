@@ -8,4 +8,5 @@ public class CreateProjectRequest {
     @NotBlank
     private String name;
     private String description;
+    private String status;
 }

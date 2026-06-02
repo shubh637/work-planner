@@ -15,11 +15,12 @@ export const userApi = {
 }
 
 export const projectApi = {
-  getAll:  ()       => axiosInstance.get('/projects'),
-  getById: (id)     => axiosInstance.get(`/projects/${id}`),
-  create:  (data)   => axiosInstance.post('/projects', data),
-  update:  (id, d)  => axiosInstance.put(`/projects/${id}`, d),
-  remove:  (id)     => axiosInstance.delete(`/projects/${id}`),
+  getAll:       ()           => axiosInstance.get('/projects'),
+  getById:      (id)         => axiosInstance.get(`/projects/${id}`),
+  create:       (data)       => axiosInstance.post('/projects', data),
+  update:       (id, d)      => axiosInstance.put(`/projects/${id}`, d),
+  updateStatus: (id, status) => axiosInstance.patch(`/projects/${id}/status`, { status }),
+  remove:       (id)         => axiosInstance.delete(`/projects/${id}`),
 }
 
 export const taskApi = {
@@ -31,6 +32,7 @@ export const taskApi = {
   getHistory:       (id)     => axiosInstance.get(`/tasks/${id}/history`),
   create:           (data)   => axiosInstance.post('/tasks', data),
   suggest:          (data)   => axiosInstance.post('/tasks/suggest', data),
+  editSuggestion:   (id, d)  => axiosInstance.patch(`/tasks/${id}/suggestion`, d),
   update:           (id, d)  => axiosInstance.put(`/tasks/${id}`, d),
   remove:           (id)     => axiosInstance.delete(`/tasks/${id}`),
   assign:           (id, d)  => axiosInstance.patch(`/tasks/${id}/assign`, d),

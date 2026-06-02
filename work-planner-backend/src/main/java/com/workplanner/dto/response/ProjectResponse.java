@@ -11,5 +11,6 @@ public class ProjectResponse {
     private String description;
     private Long managerId;
     private String managerName;
+    private String status;
     private LocalDateTime createdAt;
 }
