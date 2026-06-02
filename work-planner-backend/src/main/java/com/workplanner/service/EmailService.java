@@ -1,44 +1,44 @@
 package com.workplanner.service;
 
-import com.resend.Resend;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.CreateEmailOptions;
 import com.workplanner.entity.Task;
 import com.workplanner.entity.User;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
-    private final Resend resend;
-    private final String fromAddress;
-    private final String frontendUrl;
+    private final JavaMailSender mailSender;
 
-    public EmailService(
-            @Value("${resend.api-key}") String apiKey,
-            @Value("${resend.from}") String fromAddress,
-            @Value("${app.frontend-url}") String frontendUrl) {
-        this.resend = new Resend(apiKey);
-        this.fromAddress = fromAddress;
-        this.frontendUrl = frontendUrl;
-    }
+    @Value("${mail.from}")
+    private String fromAddress;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     private void send(String to, String subject, String html) {
         try {
-            CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromAddress)
-                    .to(to)
-                    .subject(subject)
-                    .html(html)
-                    .build();
-            resend.emails().send(params);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
             log.info("Email sent to {}: {}", to, subject);
-        } catch (ResendException e) {
+        } catch (MessagingException e) {
             log.error("Failed to send email to {}: {}", to, e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Unexpected error sending email to {}: {}", to, e.getMessage(), e);
         }
     }
 
