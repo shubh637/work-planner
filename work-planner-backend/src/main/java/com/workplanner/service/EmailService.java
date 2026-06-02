@@ -1,44 +1,53 @@
 package com.workplanner.service;
 
+import com.mailersend.sdk.Email;
+import com.mailersend.sdk.MailerSend;
+import com.mailersend.sdk.MailerSendResponse;
+import com.mailersend.sdk.exceptions.MailerSendException;
 import com.workplanner.entity.Task;
 import com.workplanner.entity.User;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final String apiToken;
+    private final String fromAddress;
+    private final String fromName;
+    private final String frontendUrl;
 
-    @Value("${mail.from}")
-    private String fromAddress;
+    public EmailService(
+            @Value("${mailersend.api-token}") String apiToken,
+            @Value("${mailersend.from}") String fromAddress,
+            @Value("${mailersend.from-name}") String fromName,
+            @Value("${app.frontend-url}") String frontendUrl) {
+        this.apiToken = apiToken;
+        this.fromAddress = fromAddress;
+        this.fromName = fromName;
+        this.frontendUrl = frontendUrl;
+    }
 
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
-
-    private void send(String to, String subject, String html) {
+    private void send(String toEmail, String toName, String subject, String html) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(html, true);
-            mailSender.send(message);
-            log.info("Email sent to {}: {}", to, subject);
-        } catch (MessagingException e) {
-            log.error("Failed to send email to {}: {}", to, e.getMessage(), e);
+            MailerSend ms = new MailerSend();
+            ms.setToken(apiToken);
+
+            Email email = new Email();
+            email.setFrom(fromName, fromAddress);
+            email.addRecipient(toName, toEmail);
+            email.setSubject(subject);
+            email.setHtml(html);
+
+            MailerSendResponse response = ms.emails().send(email);
+            log.info("Email sent to {}: {} (messageId={})", toEmail, subject, response.messageId);
+        } catch (MailerSendException e) {
+            log.error("Failed to send email to {}: {}", toEmail, e.getMessage(), e);
         } catch (Exception e) {
-            log.error("Unexpected error sending email to {}: {}", to, e.getMessage(), e);
+            log.error("Unexpected error sending email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
 
@@ -57,7 +66,7 @@ public class EmailService {
                 <p style="color:#94a3b8;font-size:13px;">This link expires in 24 hours.</p>
                 </body></html>
                 """.formatted(user.getName(), setPasswordUrl);
-        send(user.getEmail(), "Work Planner — You've been invited", html);
+        send(user.getEmail(), user.getName(), "Work Planner — You've been invited", html);
     }
 
     @Async
@@ -92,7 +101,7 @@ public class EmailService {
                 task.getDueDate() != null ? task.getDueDate().toString() : "Not set",
                 task.getDescription() != null ? task.getDescription() : "-",
                 taskUrl);
-        send(manager.getEmail(), "Work Planner — New Task Suggestion: " + task.getTitle(), html);
+        send(manager.getEmail(), manager.getName(), "Work Planner — New Task Suggestion: " + task.getTitle(), html);
     }
 
     @Async
@@ -110,7 +119,7 @@ public class EmailService {
                 <p style="color:#94a3b8;font-size:13px;">This link expires in 1 hour.</p>
                 </body></html>
                 """.formatted(user.getName(), resetUrl);
-        send(user.getEmail(), "Work Planner — Reset Your Password", html);
+        send(user.getEmail(), user.getName(), "Work Planner — Reset Your Password", html);
     }
 
     @Async
@@ -144,7 +153,7 @@ public class EmailService {
                 task.getDueDate() != null ? task.getDueDate().toString() : "Not set",
                 task.getDescription() != null ? task.getDescription() : "-",
                 taskUrl);
-        send(assignee.getEmail(), "Work Planner — Task Assigned: " + task.getTitle(), html);
+        send(assignee.getEmail(), assignee.getName(), "Work Planner — Task Assigned: " + task.getTitle(), html);
     }
 
     @Async
@@ -161,6 +170,6 @@ public class EmailService {
                 recipient.getName(),
                 task.getTitle(),
                 task.getDueDate() != null ? task.getDueDate().toString() : "Not set");
-        send(recipient.getEmail(), "Work Planner — Task Approved: " + task.getTitle(), html);
+        send(recipient.getEmail(), recipient.getName(), "Work Planner — Task Approved: " + task.getTitle(), html);
     }
 }
