@@ -8,10 +8,17 @@ const EMPTY_FORM = { name: '', email: '', password: '', role: 'TEAM_MEMBER' }
 export default function TeamMembers() {
   const [members, setMembers]           = useState([])
   const [showForm, setShowForm]         = useState(false)
-  const [editTarget, setEditTarget]     = useState(null) // user object being edited
+  const [editTarget, setEditTarget]     = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [form, setForm]                 = useState(EMPTY_FORM)
   const [error, setError]               = useState('')
+  const [toast, setToast]               = useState('')
+  const [loading, setLoading]           = useState(false)
+
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3000)
+  }
 
   const load = () => userApi.getAll().then(r => setMembers(r.data))
   useEffect(() => { load() }, [])
@@ -33,28 +40,46 @@ export default function TeamMembers() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
     try {
       if (editTarget) {
         await userApi.update(editTarget.id, form)
+        showToast('Member updated successfully')
       } else {
         await userApi.addMember(form)
+        showToast('Member added — invite email sent')
       }
       setShowForm(false)
       load()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save member')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleDelete = async () => {
-    await userApi.remove(deleteTarget)
-    setDeleteTarget(null)
-    load()
+    setLoading(true)
+    try {
+      await userApi.remove(deleteTarget)
+      showToast('Member deleted')
+      setDeleteTarget(null)
+      load()
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <Layout>
       <div className="page container">
+        {toast && (
+          <div style={{
+            position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 9999,
+            background: '#22c55e', color: '#fff', padding: '0.75rem 1.5rem',
+            borderRadius: '8px', fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+          }}>{toast}</div>
+        )}
         <div className="page-header">
           <h1 className="page-title">Team Members</h1>
           <button className="btn btn-primary" onClick={openAdd}>Add Member</button>
@@ -126,8 +151,8 @@ export default function TeamMembers() {
                 <div className="form-actions">
                   <button type="button" className="btn btn-secondary"
                     onClick={() => { setShowForm(false); setError('') }}>Cancel</button>
-                  <button type="submit" className="btn btn-primary">
-                    {editTarget ? 'Save Changes' : 'Add'}
+                  <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? 'Saving...' : (editTarget ? 'Save Changes' : 'Add')}
                   </button>
                 </div>
               </form>
