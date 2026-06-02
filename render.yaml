@@ -1,10 +1,8 @@
 services:
   - type: web
     name: work-planner-backend
-    runtime: java
+    runtime: docker
     rootDir: work-planner-backend
-    buildCommand: mvn clean package -DskipTests
-    startCommand: java -jar target/work-planner-backend-1.0.0.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
         sync: false
