@@ -44,15 +44,19 @@ export default function TaskDetailManager() {
   const { id } = useParams()
   const { showToast } = useToast()
   const [task, setTask]               = useState(null)
+  const [loadError, setLoadError]     = useState(false)
   const [history, setHistory]         = useState([])
   const [members, setMembers]         = useState([])
   const [assignTo, setAssignTo]       = useState('')
   const [notes, setNotes]             = useState('')
   const [editStatus, setEditStatus]   = useState('')
   const [statusNotes, setStatusNotes] = useState('')
+  const [acting, setActing]           = useState(false)
 
   const load = () => {
-    taskApi.getById(id).then(r => { setTask(r.data); setEditStatus(r.data.status) })
+    taskApi.getById(id)
+      .then(r => { setTask(r.data); setEditStatus(r.data.status) })
+      .catch(() => setLoadError(true))
     taskApi.getHistory(id).then(r => setHistory(r.data))
   }
 
@@ -62,9 +66,24 @@ export default function TaskDetailManager() {
   }, [id])
 
   const action = async (fn, successMsg) => {
+    if (acting) return
+    setActing(true)
     try { await fn(); showToast(successMsg); load() }
     catch (err) { showToast(err.response?.data?.message || 'Error', 'error') }
+    finally { setActing(false) }
   }
+
+  if (loadError) return (
+    <Layout>
+      <div className="page container" style={{ textAlign: 'center', paddingTop: '4rem', color: 'var(--text-3)' }}>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px', display: 'block', opacity: 0.4 }}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p style={{ fontWeight: 600 }}>Failed to load task</p>
+        <button className="btn btn-secondary" style={{ marginTop: '12px' }} onClick={() => { setLoadError(false); load() }}>Retry</button>
+      </div>
+    </Layout>
+  )
 
   if (!task) return (
     <Layout>
@@ -107,15 +126,15 @@ export default function TaskDetailManager() {
             </div>
             {isPending && (
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0 }}>
-                <button className="btn btn-success btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                <button className="btn btn-success btn-sm" disabled={acting} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
                   onClick={() => action(() => taskApi.approve(id, { notes }), 'Task approved')}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Approve
+                  {acting ? 'Saving…' : 'Approve'}
                 </button>
-                <button className="btn btn-danger btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                <button className="btn btn-danger btn-sm" disabled={acting} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
                   onClick={() => action(() => taskApi.reject(id, { notes }), 'Task rejected')}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  Reject
+                  {acting ? 'Saving…' : 'Reject'}
                 </button>
               </div>
             )}
@@ -154,11 +173,11 @@ export default function TaskDetailManager() {
                 <label className="form-label" style={{ marginBottom: '6px', display: 'block' }}>Notes for member (optional)</label>
                 <input className="form-control" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any instructions…" />
               </div>
-              <button className="btn btn-primary" disabled={!assignTo}
+              <button className="btn btn-primary" disabled={!assignTo || acting}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', alignSelf: 'flex-start' }}
                 onClick={() => action(() => taskApi.assign(id, { assignedToUserId: Number(assignTo) }), 'Task assigned — email sent!')}>
                 <Icon d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" size={13} />
-                Assign &amp; Notify
+                {acting ? 'Saving…' : 'Assign & Notify'}
               </button>
             </div>
           </div>
@@ -176,11 +195,11 @@ export default function TaskDetailManager() {
                 <label className="form-label" style={{ marginBottom: '6px', display: 'block' }}>Reason (optional)</label>
                 <input className="form-control" value={statusNotes} onChange={e => setStatusNotes(e.target.value)} placeholder="Reason for change…" />
               </div>
-              <button className="btn btn-primary" disabled={editStatus === task.status}
+              <button className="btn btn-primary" disabled={editStatus === task.status || acting}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', alignSelf: 'flex-start' }}
                 onClick={() => action(() => taskApi.update(id, { status: editStatus, statusNotes }), `Status updated to ${editStatus.replace('_', ' ')}`)}>
                 <Icon d="M20 6L9 17l-5-5" size={13} />
-                Save Status
+                {acting ? 'Saving…' : 'Save Status'}
               </button>
             </div>
           </div>

@@ -51,7 +51,10 @@ public class UserService {
         User.Role role = (req.getRole() != null && req.getRole().equalsIgnoreCase("MANAGER"))
                 ? User.Role.MANAGER : User.Role.TEAM_MEMBER;
 
-        String token = UUID.randomUUID().toString();
+        boolean hasPassword = req.getPassword() != null && !req.getPassword().isBlank();
+        String encodedPassword = hasPassword
+                ? passwordEncoder.encode(req.getPassword())
+                : passwordEncoder.encode(UUID.randomUUID().toString());
 
         User user = userRepository.findByEmail(req.getEmail()).map(existing -> {
             if (existing.isActive()) {
@@ -60,24 +63,33 @@ public class UserService {
             existing.setName(req.getName());
             existing.setRole(role);
             existing.setActive(true);
-            existing.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-            existing.setPasswordResetToken(token);
-            existing.setTokenExpiry(LocalDateTime.now().plusHours(24));
+            existing.setPassword(encodedPassword);
+            if (!hasPassword) {
+                String token = UUID.randomUUID().toString();
+                existing.setPasswordResetToken(token);
+                existing.setTokenExpiry(LocalDateTime.now().plusHours(24));
+            }
             return existing;
-        }).orElseGet(() -> User.builder()
-                .name(req.getName())
-                .email(req.getEmail())
-                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .role(role)
-                .active(true)
-                .passwordResetToken(token)
-                .tokenExpiry(LocalDateTime.now().plusHours(24))
-                .build());
+        }).orElseGet(() -> {
+            User.UserBuilder builder = User.builder()
+                    .name(req.getName())
+                    .email(req.getEmail())
+                    .password(encodedPassword)
+                    .role(role)
+                    .active(true);
+            if (!hasPassword) {
+                String token = UUID.randomUUID().toString();
+                builder.passwordResetToken(token).tokenExpiry(LocalDateTime.now().plusHours(24));
+            }
+            return builder.build();
+        });
 
         user = userRepository.save(user);
 
-        String setPasswordUrl = frontendUrl + "/set-password?token=" + token;
-        emailService.sendInviteEmail(user, setPasswordUrl);
+        if (!hasPassword) {
+            String setPasswordUrl = frontendUrl + "/set-password?token=" + user.getPasswordResetToken();
+            emailService.sendInviteEmail(user, setPasswordUrl);
+        }
 
         return toResponse(user);
     }
@@ -85,6 +97,14 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Long id, RegisterUserRequest req) {
         User user = findOrThrow(id);
+        // TC-062: check duplicate email if it changed
+        if (!user.getEmail().equalsIgnoreCase(req.getEmail())) {
+            userRepository.findByEmail(req.getEmail()).ifPresent(existing -> {
+                if (existing.isActive() && !existing.getId().equals(id)) {
+                    throw new IllegalArgumentException("Email already in use: " + req.getEmail());
+                }
+            });
+        }
         user.setName(req.getName());
         user.setEmail(req.getEmail());
         if (req.getPassword() != null && !req.getPassword().isBlank()) {

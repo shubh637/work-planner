@@ -35,6 +35,7 @@ export default function Tasks() {
   const [editError, setEditError]       = useState('')
   const [form, setForm] = useState({ title: '', description: '', projectId: '', assignedToUserId: '', dueDate: '' })
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const load = () => taskApi.getFiltered(filters).then(r => setTasks(r.data))
 
@@ -71,7 +72,9 @@ export default function Tasks() {
 
   const handleCreate = async (e) => {
     e.preventDefault()
+    if (submitting) return
     setError('')
+    setSubmitting(true)
     try {
       await taskApi.create({
         ...form,
@@ -83,7 +86,7 @@ export default function Tasks() {
       load()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create task')
-    }
+    } finally { setSubmitting(false) }
   }
 
   const handleDelete = async () => {
@@ -297,7 +300,7 @@ export default function Tasks() {
                 </div>
                 <div className="form-actions">
                   <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary">Create</button>
+                  <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Creating…' : 'Create'}</button>
                 </div>
               </form>
             </div>

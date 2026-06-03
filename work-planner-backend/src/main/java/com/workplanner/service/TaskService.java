@@ -148,7 +148,11 @@ public class TaskService {
         if (task.getStatus() != TaskStatus.PENDING) {
             throw new InvalidStatusTransitionException("Can only edit suggestions that are still pending");
         }
-        if (req.getTitle() != null) task.setTitle(req.getTitle());
+        // TC-054: title must not be blank if provided
+        if (req.getTitle() != null) {
+            if (req.getTitle().isBlank()) throw new IllegalArgumentException("Title cannot be blank");
+            task.setTitle(req.getTitle());
+        }
         if (req.getDescription() != null) task.setDescription(req.getDescription());
         if (req.getDueDate() != null) task.setDueDate(req.getDueDate());
         return toResponse(taskRepository.save(task));
@@ -170,6 +174,10 @@ public class TaskService {
 
         if (assignee.getRole() != User.Role.TEAM_MEMBER) {
             throw new UnauthorizedActionException("Can only assign tasks to TEAM_MEMBER users");
+        }
+        // TC-034: block assignment to deactivated users
+        if (!assignee.isActive()) {
+            throw new UnauthorizedActionException("Cannot assign tasks to a deactivated member");
         }
 
         TaskStatus old = task.getStatus();
@@ -208,8 +216,11 @@ public class TaskService {
         }
         task.setStatus(TaskStatus.REJECTED);
         Task saved = taskRepository.save(task);
-        recordProgress(saved, managerId, TaskStatus.PENDING, TaskStatus.REJECTED,
-                req.getNotes() != null ? req.getNotes() : "Rejected by manager");
+        String notes = req.getNotes() != null ? req.getNotes() : "Rejected by manager";
+        recordProgress(saved, managerId, TaskStatus.PENDING, TaskStatus.REJECTED, notes);
+        // TC-056: notify the member who suggested/is assigned to the task
+        User recipient = task.getSuggestedBy() != null ? task.getSuggestedBy() : task.getAssignedTo();
+        if (recipient != null) emailService.sendTaskRejectionEmail(saved, recipient, notes);
         return toResponse(saved);
     }
 

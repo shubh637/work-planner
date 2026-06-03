@@ -25,7 +25,6 @@ export default function MySuggestions() {
   const [loading, setLoading]   = useState(false)
 
   const loadSuggestions = () => taskApi.getMySuggestions().then(r => setTasks(r.data))
-
   useEffect(() => {
     loadSuggestions()
     projectApi.getAll().then(r => setProjects(r.data))

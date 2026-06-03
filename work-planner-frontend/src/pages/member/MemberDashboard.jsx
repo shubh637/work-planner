@@ -15,14 +15,22 @@ const isOverdue = t => t.dueDate && new Date(t.dueDate) < new Date() && t.status
 export default function MemberDashboard() {
   const [tasks, setTasks]     = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [search, setSearch]   = useState('')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const activeStatus = searchParams.get('status') || ''
 
-  useEffect(() => {
-    taskApi.getMyTasks().then(r => setTasks(r.data)).finally(() => setLoading(false))
-  }, [])
+  const fetchTasks = () => {
+    setLoading(true)
+    setLoadError(false)
+    taskApi.getMyTasks()
+      .then(r => setTasks(r.data))
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { fetchTasks() }, [])
 
   const open       = tasks.filter(t => t.status === 'OPEN').length
   const inProgress = tasks.filter(t => t.status === 'IN_PROGRESS').length
@@ -53,6 +61,14 @@ export default function MemberDashboard() {
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-3)' }}>
             <div className="spinner" style={{ margin: '0 auto 12px' }} />
             Loading…
+          </div>
+        ) : loadError ? (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-3)' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px', display: 'block', opacity: 0.4 }}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p style={{ fontWeight: 600, marginBottom: '12px' }}>Failed to load tasks</p>
+            <button className="btn btn-secondary" onClick={fetchTasks}>Retry</button>
           </div>
         ) : (
           <>

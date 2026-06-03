@@ -59,7 +59,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendTaskSuggestionEmail(Task task, User manager) {
+    public void sendTaskSuggestionEmail(Task task, User manager, String suggestedByName, String projectName) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -91,9 +91,9 @@ public class EmailService {
                     </body></html>
                     """.formatted(
                     manager.getName(),
-                    task.getSuggestedBy().getName(),
+                    suggestedByName,
                     task.getTitle(),
-                    task.getProject().getName(),
+                    projectName,
                     task.getDueDate() != null ? task.getDueDate().toString() : "Not set",
                     task.getDescription() != null ? task.getDescription() : "-",
                     taskUrl
@@ -189,6 +189,41 @@ public class EmailService {
             log.error("Failed to send assignment email to {}: {}", assignee.getEmail(), e.getMessage(), e);
         } catch (Exception e) {
             log.error("Unexpected error sending assignment email to {}: {}", assignee.getEmail(), e.getMessage(), e);
+        }
+    }
+
+    @Async
+    public void sendTaskRejectionEmail(Task task, User recipient, String reason) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(recipient.getEmail());
+            helper.setSubject("Work Planner — Task Suggestion Rejected: " + task.getTitle());
+
+            String body = """
+                    <html><body style="font-family:Arial,sans-serif;">
+                    <h2 style="color:#dc2626;">Task Suggestion Not Approved</h2>
+                    <p>Hi <strong>%s</strong>,</p>
+                    <p>Your suggested task <strong>"%s"</strong> has been reviewed and was not approved at this time.</p>
+                    %s
+                    <p style="color:#94a3b8;font-size:13px;">If you have questions, please reach out to your manager.</p>
+                    </body></html>
+                    """.formatted(
+                    recipient.getName(),
+                    task.getTitle(),
+                    (reason != null && !reason.isBlank())
+                        ? "<p><b>Reason:</b> " + reason + "</p>"
+                        : ""
+            );
+
+            helper.setText(body, true);
+            mailSender.send(message);
+            log.info("Rejection email sent to {} for task id={}", recipient.getEmail(), task.getId());
+        } catch (MessagingException e) {
+            log.error("Failed to send rejection email: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Unexpected error sending rejection email: {}", e.getMessage(), e);
         }
     }
 
