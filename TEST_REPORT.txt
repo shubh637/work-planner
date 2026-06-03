@@ -1,0 +1,147 @@
+==================================================================
+          WORK PLANNER - COMPREHENSIVE TEST REPORT
+==================================================================
+  Date        : 2026-06-03 13:06:55
+  Environment : Live API - localhost:8080
+  Auth Method : JWT Bearer Token
+  Test Tool   : curl (shell script)
+==================================================================
+
+EXECUTIVE SUMMARY
+-----------------
+  Total Tests Run : 80
+  PASS            : 80
+  FAIL            : 0
+  Pass Rate       : 100%
+
+==================================================================
+
+PASS RESULTS
+------------
+  TC-001      Login invalid email format                               exp:400 got:400
+  TC-002      Login non-existent user                                  exp:401 got:401
+  TC-003      Login wrong password                                     exp:401 got:401
+  TC-004      Login valid manager → 200 + JWT                        exp:200 got:200
+  TC-005      Login valid member → 200 + JWT                         exp:200 got:200
+  TC-006      No-token → 403                                         exp:403 got:403
+  TC-007      Duplicate email → 400                                  exp:400 got:400
+  TC-008      Missing name → 400                                     exp:400 got:400
+  TC-009      Missing email → 400                                    exp:400 got:400
+  TC-010      Invalid email format → 400                             exp:400 got:400
+  TC-011      Add member valid → 201                                 exp:201 got:201
+  TC-012      Deactivate member → 204                                exp:204 got:204
+  TC-013      Member cannot list users → 403                         exp:403 got:403
+  TC-014      Manager updates member → 200                           exp:200 got:200
+  TC-015      Member cannot PUT /users → 403                         exp:403 got:403
+  TC-016      Create project valid → 201                             exp:201 got:201
+  TC-017      Create project missing name → 400                      exp:400 got:400
+  TC-018      Member cannot create project → 403                     exp:403 got:403
+  TC-019      Get all projects (manager) → 200                       exp:200 got:200
+  TC-020      Get all projects (member) → 200                        exp:200 got:200
+  TC-021      Update project status IN_PROGRESS → 200                exp:200 got:200
+  TC-022      Update project status DONE → 200                       exp:200 got:200
+  TC-023      Member cannot change project status → 403              exp:403 got:403
+  TC-024      Invalid status value falls back → 200                  exp:200 got:200
+  TC-025      Delete non-existent project → 404                      exp:404 got:404
+  TC-026      Create task valid (unassigned) → 201                   exp:201 got:201
+  TC-027      Create task missing title → 400                        exp:400 got:400
+  TC-028      Create task missing projectId → 400                    exp:400 got:400
+  TC-029      Member cannot create task → 403                        exp:403 got:403
+  TC-030      Create task on DONE project → 422                      exp:422 got:422
+  TC-031      Get all tasks (manager) → 200                          exp:200 got:200
+  TC-032      Member cannot GET /tasks → 403                         exp:403 got:403
+  TC-033      Assign task to member → 200                            exp:200 got:200
+  TC-034      Assign to non-existent user → 404                      exp:404 got:404
+  TC-035      Get task by ID (manager) → 200                         exp:200 got:200
+  TC-036      Get non-existent task → 404                            exp:404 got:404
+  TC-037      Update task title+status → 200                         exp:200 got:200
+  TC-038      Update task status CLOSED → 200                        exp:200 got:200
+  TC-039      Member get my tasks → 200                              exp:200 got:200
+  TC-040      Member cannot PUT task → 403                           exp:403 got:403
+  TC-041-pre  Delete task cleanup                                      exp:204 got:204
+  TC-042      Member suggests task → 201                             exp:201 got:201
+  TC-043      Suggest missing title → 400                            exp:400 got:400
+  TC-044      Suggest missing projectId → 400                        exp:400 got:400
+  TC-045      Suggest on DONE project → 422                          exp:422 got:422
+  TC-046      Member get own suggestions → 200                       exp:200 got:200
+  TC-047      Manager get pending suggestions → 200                  exp:200 got:200
+  TC-048      Manager approves suggestion → 200                      exp:200 got:200
+  TC-049      Double approve already-approved → 422                  exp:422 got:422
+  TC-050      Manager rejects suggestion → 200                       exp:200 got:200
+  TC-051      Double reject already-rejected → 422                   exp:422 got:422
+  TC-052      Member edits own pending suggestion → 200              exp:200 got:200
+  TC-053      Edit suggestion blank title → 400                      exp:400 got:400
+  TC-054      Edit approved suggestion → 422                         exp:422 got:422
+  TC-055      Member posts update → 200                              exp:200 got:200
+  TC-056      Member advance OPEN→IN_PROGRESS → 200                exp:200 got:200
+  TC-057      Member advance IN_PROGRESS→CLOSED → 200              exp:200 got:200
+  TC-058      Member cannot advance CLOSED task → 422                exp:422 got:422
+  TC-059      Member cannot complete already-closed → 422            exp:422 got:422
+  TC-060      Wrong member cannot post update → 403                  exp:403 got:403
+  TC-061      Wrong member cannot advance task → 403                 exp:403 got:403
+  TC-062      Get task history (manager) → 200                       exp:200 got:200
+  TC-063      Member can get task history → 200                      exp:200 got:200
+  TC-064      History non-existent task → 404                        exp:404 got:404
+  TC-065      Assign to deactivated user → 403                       exp:403 got:403
+  TC-066      Filter tasks by project → 200                          exp:200 got:200
+  TC-067      Filter tasks by assignee → 200                         exp:200 got:200
+  TC-068      Filter tasks by status OPEN → 200                      exp:200 got:200
+  TC-069      Filter tasks by status CLOSED → 200                    exp:200 got:200
+  TC-070      Reports tasks-by-status (manager) → 200                exp:200 got:200
+  TC-071      Reports tasks-by-project (manager) → 200               exp:200 got:200
+  TC-072      Reports tasks-by-member (manager) → 200                exp:200 got:200
+  TC-073      Reports denied for member → 403                        exp:403 got:403
+  TC-074      Assign task in DONE project → 422                      exp:422 got:422
+  TC-075      Login empty body → 400                                 exp:400 got:400
+  TC-076      Create task very long title → 400 (size validation)    exp:400 got:400
+  TC-077      SQL injection in title safely stored → 201             exp:201 got:201
+  TC-078      Filter invalid status → 400                            exp:400 got:400
+  TC-079      Member can view own task detail → 200                  exp:200 got:200
+  TC-080      Duplicate project name allowed → 201                   exp:201 got:201
+
+==================================================================
+
+FAIL RESULTS
+------------
+  No failures!
+
+==================================================================
+
+TEST CATEGORIES
+---------------
+  Authentication  : TC-001 to TC-006   (Login, JWT, no-token access)
+  Team Members    : TC-007 to TC-015   (Add, deactivate, role guards)
+  Projects        : TC-016 to TC-025   (CRUD, status changes, permissions)
+  Tasks           : TC-026 to TC-041   (CRUD, assignment, status)
+  Suggestions     : TC-042 to TC-054   (Suggest, approve, reject, edit)
+  Member Progress : TC-055 to TC-061   (Update, advance, complete)
+  Task History    : TC-062 to TC-064   (History timeline)
+  Deactivated User: TC-065             (Assignment guard)
+  Reporting       : TC-066 to TC-073   (Filters, report endpoints)
+  DONE Project    : TC-030,TC-045,TC-074 (Lock enforcement)
+  Edge Cases      : TC-075 to TC-080   (Injection, empty body, limits)
+
+==================================================================
+
+DESIGN NOTES
+------------
+  1. Spring Security returns HTTP 403 (not 401) for unauthenticated
+     requests when no token is provided (default framework behavior).
+
+  2. HTTP status codes used by the API:
+     - 200 OK          : successful updates/reads
+     - 201 Created     : successful resource creation
+     - 204 No Content  : successful delete
+     - 400 Bad Request : validation errors, duplicate data
+     - 403 Forbidden   : role-based access denial
+     - 404 Not Found   : resource not found
+     - 422 Unprocessable Entity : invalid state transitions
+       (approve already-approved, task on DONE project, etc.)
+
+  3. PUT /users is restricted to MANAGER role only. Members must
+     use dedicated endpoints to update their own profile.
+
+  4. DONE project enforcement: The backend blocks task creation,
+     suggestion, and assignment on projects marked DONE.
+
+==================================================================

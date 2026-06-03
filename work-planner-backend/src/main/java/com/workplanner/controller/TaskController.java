@@ -143,6 +143,14 @@ public class TaskController {
                 req != null ? req : new ProgressUpdateRequest(), currentUserId(auth)));
     }
 
+    @PatchMapping("/{id}/suggestion")
+    @PreAuthorize("hasRole('TEAM_MEMBER')")
+    public ResponseEntity<TaskResponse> editSuggestion(@PathVariable Long id,
+                                                       @RequestBody UpdateTaskRequest req,
+                                                       Authentication auth) {
+        return ResponseEntity.ok(taskService.editSuggestion(id, req, currentUserId(auth)));
+    }
+
     @PatchMapping("/{id}/complete")
     @PreAuthorize("hasRole('TEAM_MEMBER')")
     public ResponseEntity<TaskResponse> complete(@PathVariable Long id,

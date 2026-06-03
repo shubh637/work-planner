@@ -58,6 +58,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskProgressResponse> getHistory(Long taskId) {
+        findOrThrow(taskId);
         return taskProgressRepository.findByTaskIdOrderByChangedAtAsc(taskId)
                 .stream().map(this::toProgressResponse).toList();
     }
