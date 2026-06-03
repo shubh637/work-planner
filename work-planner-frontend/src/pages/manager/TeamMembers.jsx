@@ -3,11 +3,13 @@ import Layout from '../../components/Layout'
 import ConfirmModal from '../../components/ConfirmModal'
 import { userApi } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'TEAM_MEMBER' }
 
 export default function TeamMembers() {
   const { auth, login } = useAuth()
+  const { showToast } = useToast()
   const [members, setMembers]           = useState([])
   const [showForm, setShowForm]         = useState(false)
   const [editTarget, setEditTarget]     = useState(null) // user object being edited
@@ -46,8 +48,10 @@ export default function TeamMembers() {
           window.location.href = updated.role === 'MANAGER' ? '/manager/dashboard' : '/member/dashboard'
           return
         }
+        showToast('Member updated successfully')
       } else {
         await userApi.addMember(form)
+        showToast('Member added successfully')
       }
       setShowForm(false)
       load()
@@ -59,6 +63,7 @@ export default function TeamMembers() {
   const handleDelete = async () => {
     await userApi.remove(deleteTarget)
     setDeleteTarget(null)
+    showToast('Member deactivated')
     load()
   }
 

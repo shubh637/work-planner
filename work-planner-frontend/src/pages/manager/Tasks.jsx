@@ -5,6 +5,7 @@ import FilterBar from '../../components/FilterBar'
 import ProgressBadge from '../../components/ProgressBadge'
 import ConfirmModal from '../../components/ConfirmModal'
 import { taskApi, projectApi, userApi } from '../../api/api'
+import { useToast } from '../../context/ToastContext'
 
 const Icon = ({ d, size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -19,6 +20,7 @@ const ICON_CALENDAR = "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 
 const ALL_STATUSES = ['PENDING','APPROVED','REJECTED','OPEN','IN_PROGRESS','CLOSED']
 
 export default function Tasks() {
+  const { showToast } = useToast()
   const [searchParams] = useSearchParams()
   const [tasks, setTasks]       = useState([])
   const [projects, setProjects] = useState([])
@@ -64,6 +66,7 @@ export default function Tasks() {
     try {
       await taskApi.update(editTarget.id, editForm)
       setEditTarget(null)
+      showToast('Task updated')
       load()
     } catch (err) {
       setEditError(err.response?.data?.message || 'Failed to update task')
@@ -83,6 +86,7 @@ export default function Tasks() {
       })
       setShowCreate(false)
       setForm({ title: '', description: '', projectId: '', assignedToUserId: '', dueDate: '' })
+      showToast('Task created')
       load()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create task')
@@ -92,6 +96,7 @@ export default function Tasks() {
   const handleDelete = async () => {
     await taskApi.remove(deleteTarget)
     setDeleteTarget(null)
+    showToast('Task deleted')
     load()
   }
 

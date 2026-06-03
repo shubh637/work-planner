@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../../components/Layout'
 import { taskApi, projectApi } from '../../api/api'
+import { useToast } from '../../context/ToastContext'
 
 export default function SuggestTask() {
+  const { showToast } = useToast()
   const [projects, setProjects] = useState([])
   const [form, setForm] = useState({ title: '', description: '', projectId: '', dueDate: '' })
-  const [msg, setMsg]   = useState('')
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -16,18 +17,18 @@ export default function SuggestTask() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(''); setMsg('')
+    setLoading(true)
     try {
       await taskApi.suggest({
         ...form,
         projectId: Number(form.projectId),
         dueDate: form.dueDate || null,
       })
-      setMsg('Task suggestion submitted! Awaiting manager approval.')
+      showToast('Task suggestion submitted! Awaiting manager approval.')
       setForm({ title: '', description: '', projectId: '', dueDate: '' })
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit suggestion')
-    }
+      showToast(err.response?.data?.message || 'Failed to submit suggestion', 'error')
+    } finally { setLoading(false) }
   }
 
   return (
@@ -38,8 +39,6 @@ export default function SuggestTask() {
         </div>
 
         <div className="card" style={{ maxWidth: 560 }}>
-          {msg   && <div className="alert alert-success">{msg}</div>}
-          {error && <div className="alert alert-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -67,7 +66,7 @@ export default function SuggestTask() {
             </div>
             <div className="form-actions">
               <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>Cancel</button>
-              <button type="submit" className="btn btn-primary">Submit Suggestion</button>
+              <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Submitting…' : 'Submit Suggestion'}</button>
             </div>
           </form>
         </div>

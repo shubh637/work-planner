@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { taskApi, projectApi } from '../api/api'
 
 const MANAGER_NAV = [
   {
@@ -67,6 +68,34 @@ export default function Sidebar({ open, onClose }) {
   const email     = auth?.user?.email || ''
   const role      = isManager ? 'Manager' : 'Team Member'
   const avatarColor = getAvatarColor(name)
+
+  const [query, setQuery]         = useState('')
+  const [results, setResults]     = useState([])
+  const [searchData, setSearchData] = useState(null)
+  const searchRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) { setQuery(''); setResults([]); return }
+    if (searchData) return
+    Promise.all([
+      isManager ? taskApi.getFiltered({}) : taskApi.getMyTasks(),
+      isManager ? projectApi.getAll() : Promise.resolve({ data: [] }),
+    ]).then(([t, p]) => setSearchData({ tasks: t.data, projects: p.data }))
+  }, [open])
+
+  useEffect(() => {
+    if (!query.trim() || !searchData) { setResults([]); return }
+    const q = query.toLowerCase()
+    const taskHits = searchData.tasks
+      .filter(t => t.title.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map(t => ({ label: t.title, sub: t.projectName || '', to: `/${isManager ? 'manager' : 'member'}/tasks/${t.id}`, type: 'task' }))
+    const projHits = (searchData.projects || [])
+      .filter(p => p.name.toLowerCase().includes(q))
+      .slice(0, 2)
+      .map(p => ({ label: p.name, sub: 'Project', to: '/manager/projects', type: 'project' }))
+    setResults([...taskHits, ...projHits])
+  }, [query, searchData])
 
   const handleLogout = () => { logout(); navigate('/login'); onClose() }
 
@@ -140,6 +169,57 @@ export default function Sidebar({ open, onClose }) {
 
       {/* Nav */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
+
+        {/* Search */}
+        <div style={{ position: 'relative', marginBottom: '10px' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }}>
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            ref={searchRef}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Escape' && setQuery('')}
+            placeholder="Search tasks…"
+            className="form-control"
+            style={{ paddingLeft: 30, fontSize: '0.8rem', height: 34, width: '100%' }}
+          />
+          {query && (
+            <button onClick={() => setQuery('')} style={{
+              position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)',
+              padding: '2px', lineHeight: 1, fontSize: '0.95rem',
+            }}>×</button>
+          )}
+          {results.length > 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4,
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)',
+              zIndex: 600, overflow: 'hidden',
+            }}>
+              {results.map((r, i) => (
+                <Link
+                  key={i}
+                  to={r.to}
+                  onClick={() => { setQuery(''); setResults([]); onClose() }}
+                  style={{
+                    display: 'flex', flexDirection: 'column', padding: '8px 12px',
+                    textDecoration: 'none', borderBottom: i < results.length - 1 ? '1px solid var(--border)' : 'none',
+                    transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.label}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>{r.sub}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '8px 10px 6px' }}>
           Menu
