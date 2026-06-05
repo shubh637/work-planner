@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start:backend": "cd ../work-planner-backend && mvn spring-boot:run",
+    "start:frontend": "cd  ../work-panner-frontend && npm run dev",
     "start:all": "npm run start:backend & npm run dev",
     "kill": "lsof -ti:8080,5173 | xargs kill -9 || true",
     "restart": "npm run kill && npm run start:all"
