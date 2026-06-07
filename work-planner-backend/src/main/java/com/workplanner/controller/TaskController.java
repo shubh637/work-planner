@@ -87,7 +87,7 @@ public class TaskController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<TaskResponse> update(@PathVariable Long id,
-                                               @RequestBody UpdateTaskRequest req,
+                                               @Valid @RequestBody UpdateTaskRequest req,
                                                Authentication auth) {
         return ResponseEntity.ok(taskService.updateTask(id, req, currentUserId(auth)));
     }

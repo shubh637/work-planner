@@ -58,7 +58,20 @@ public class ProjectService {
     @Transactional
     public ProjectResponse updateStatus(Long id, String rawStatus) {
         Project project = findOrThrow(id);
-        project.setStatus(parseStatus(rawStatus, project.getStatus()));
+        ProjectStatus newStatus = parseStatusStrict(rawStatus);
+        ProjectStatus current = project.getStatus();
+
+        boolean valid = (current == ProjectStatus.NOT_STARTED && newStatus == ProjectStatus.IN_PROGRESS)
+                     || (current == ProjectStatus.IN_PROGRESS && newStatus == ProjectStatus.DONE)
+                     || (current == ProjectStatus.IN_PROGRESS && newStatus == ProjectStatus.NOT_STARTED)
+                     || (current == ProjectStatus.DONE && newStatus == ProjectStatus.IN_PROGRESS);
+
+        if (!valid) {
+            throw new IllegalArgumentException(
+                "Invalid status transition: " + current + " -> " + newStatus);
+        }
+
+        project.setStatus(newStatus);
         return toResponse(projectRepository.save(project));
     }
 
@@ -77,6 +90,15 @@ public class ProjectService {
         if (raw == null || raw.isBlank()) return fallback;
         try { return ProjectStatus.valueOf(raw.toUpperCase()); }
         catch (IllegalArgumentException e) { return fallback; }
+    }
+
+    private ProjectStatus parseStatusStrict(String raw) {
+        if (raw == null || raw.isBlank())
+            throw new IllegalArgumentException("Status value is required");
+        try { return ProjectStatus.valueOf(raw.toUpperCase()); }
+        catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid project status: " + raw);
+        }
     }
 
     public ProjectResponse toResponse(Project p) {
