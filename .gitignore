@@ -1,0 +1,17 @@
+.env
+work-planner-backend/.env
+
+# Maven build output
+work-planner-backend/target/
+
+# Vite build output
+work-planner-frontend/dist/
+
+# Node dependencies
+node_modules/
+work-planner-frontend/node_modules/
+
+# Python test cache
+.pytest_cache/
+__pycache__/
+

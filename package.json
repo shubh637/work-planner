@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "react-icons": "^5.6.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start:backend": "cd work-planner-backend && npm run kill && mvn spring-boot:run",
+    "kill": "lsof -ti:8080,5173 | xargs kill -9 || true",
+    "start:frontend": "cd work-planner-frontend && npm run dev",
+    "db:reset": "mysql -u root -p work_planner < reset.sql"
+  }
+}
